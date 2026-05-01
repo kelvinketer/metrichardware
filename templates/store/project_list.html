@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Your Project List (BQ)</h1>
+    <p class="text-gray-500 mt-2">Review your materials, save as a draft, or submit for a final verified quote.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Material</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Specs</th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Est. Price (KES)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item_id, item in cart.cart.items %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-bold text-gray-900">{{ item.name }}</div>
+                            <div class="text-sm text-gray-500">Qty: {{ item.quantity }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if item.dimensions %}
+                                <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold">{{ item.dimensions }}</span>
+                            {% else %}
+                                Standard
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+                            {{ item.line_total|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                            Your Project List is currently empty. <br>
+                            <a href="/" class="text-blue-600 hover:underline mt-2 inline-block font-medium">Browse Catalog</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="lg:col-span-1">
+        <div class="bg-slate-900 rounded-xl shadow-lg p-6 text-white sticky top-24">
+            
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                <h3 class="text-xl font-bold">Project Details</h3>
+                <!-- SHOW DRAFT BADGE IF ACTIVELY EDITING A DRAFT -->
+                {% if request.session.active_draft_id %}
+                    <span class="bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Editing Draft</span>
+                {% endif %}
+            </div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-slate-300">Grand Total Est.</span>
+                <span class="text-2xl font-extrabold text-blue-400">KES {{ cart.get_total|floatformat:2 }}</span>
+            </div>
+
+            {% if cart.cart.items %}
+            <!-- UPDATE: Added action values to buttons -->
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium text-slate-300">Foreman / Contact Name</label>
+                    <!-- UPDATED: Pre-fill with User's info if available -->
+                    <input type="text" name="customer_name" required value="{{ user.contractor_profile.company_name|default:user.username }}" class="mt-1 block w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300">M-Pesa Phone Number</label>
+                    <!-- UPDATED: Pre-fill with User's info if available -->
+                    <input type="text" name="customer_phone" required value="{{ user.contractor_profile.phone_number|default:'' }}" class="mt-1 block w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300">Site Location / Delivery Point</label>
+                    <input type="text" name="project_location" required placeholder="e.g. Juja, Plot 45" class="mt-1 block w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="pt-4 space-y-3">
+                    <!-- NEW: Save as Draft Button -->
+                    <button type="submit" name="action" value="save_draft" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-md transition-colors shadow-sm border border-slate-600">
+                        Save as Draft (Don't Submit)
+                    </button>
+                    
+                    <!-- NEW: Submit Button -->
+                    <button type="submit" name="action" value="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-md transition-colors shadow-md">
+                        Submit BQ for Verification
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <button disabled class="w-full bg-slate-700 text-slate-500 font-bold py-3 px-4 rounded-md mt-6 cursor-not-allowed">
+                Add items to submit
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

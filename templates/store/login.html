@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Premium input styling for Django forms */
+    input[type="text"], input[type="password"] {
+        width: 100%; padding: 0.75rem; border-radius: 0.5rem;
+        border: 1px solid #cbd5e1; margin-top: 0.5rem; margin-bottom: 1rem;
+        background-color: #f8fafc; transition: all 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+        outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    .helptext { font-size: 0.8rem; color: #64748b; }
+    ul.errorlist { color: #ef4444; font-size: 0.875rem; list-style-type: disc; margin-left: 1rem; margin-bottom: 1rem;}
+</style>
+
+<div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-100 mt-10">
+    <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-2">Welcome Back</h1>
+    <p class="text-gray-500 text-center mb-8">Login to your Contractor Portal</p>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div class="text-left font-medium text-gray-700">
+            {{ form.as_p }}
+        </div>
+        
+        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-colors mt-4">
+            Sign In
+        </button>
+    </form>
+    
+    <p class="text-center mt-6 text-sm text-gray-600">
+        Don't have a corporate account? <br>
+        <a href="{% url 'store:register' %}" class="text-blue-600 font-bold hover:underline mt-1 inline-block">Register your company</a>
+    </p>
+</div>
+{% endblock %}

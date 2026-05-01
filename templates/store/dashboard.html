@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-end border-b border-gray-200 pb-4">
+    <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Contractor Dashboard</h1>
+        <p class="text-gray-500 mt-1">Manage your site deliveries, negotiate quotes, and track dispatch.</p>
+    </div>
+    <a href="{% url 'store:home' %}" class="hidden sm:inline-block bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm transition-colors">
+        + New Order
+    </a>
+</div>
+
+<div class="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Order Ref</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date Submitted</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Project Site</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for quote in quotes %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-extrabold text-gray-900">
+                            {% if quote.status == 'draft' %}
+                                DRAFT-{{ quote.id|stringformat:"04d" }}
+                            {% else %}
+                                #BQ-{{ quote.id|stringformat:"04d" }}
+                            {% endif %}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Foreman: {{ quote.customer_name|default:"TBD" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ quote.created_at|date:"M d, Y" }}</div>
+                        <div class="text-xs text-gray-500">{{ quote.created_at|time:"H:i" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900 font-medium flex items-center space-x-1">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>{{ quote.project_location|default:"Not Specified" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <!-- UPDATED: Added the new Draft Badge -->
+                        {% if quote.status == 'draft' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">
+                                <span class="w-2 h-2 mr-1.5 bg-gray-500 rounded-full"></span> Draft Mode
+                            </span>
+                        {% elif quote.status == 'pending' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full animate-pulse"></span> Pending Review
+                            </span>
+                        {% elif quote.status == 'reviewed' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                                <span class="w-2 h-2 mr-1.5 bg-blue-500 rounded-full"></span> Quote Ready
+                            </span>
+                        {% elif quote.status == 'accepted' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                <span class="w-2 h-2 mr-1.5 bg-indigo-500 rounded-full"></span> Approved (Awaiting Pay)
+                            </span>
+                        {% elif quote.status == 'paid' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full"></span> Paid / Processing
+                            </span>
+                        {% elif quote.status == 'loading' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800 border border-orange-200">
+                                <span class="w-2 h-2 mr-1.5 bg-orange-500 rounded-full animate-pulse"></span> Loading Warehouse
+                            </span>
+                        {% elif quote.status == 'dispatched' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-cyan-100 text-cyan-800 border border-cyan-200">
+                                <span class="w-2 h-2 mr-1.5 bg-cyan-500 rounded-full animate-pulse"></span> In Transit
+                            </span>
+                        {% elif quote.status == 'delivered' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                                <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full"></span> Delivered
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="bg-gray-50 border-b-4 border-gray-100">
+                    <td colspan="4" class="px-6 py-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start">
+                            
+                            <details class="group w-full sm:w-1/2 mb-4 sm:mb-0">
+                                <summary class="text-xs font-bold text-blue-600 cursor-pointer list-none flex items-center">
+                                    View BQ Details
+                                    <svg class="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </summary>
+                                <pre class="mt-3 text-xs text-gray-700 whitespace-pre-wrap font-mono bg-white p-4 border rounded shadow-inner">{{ quote.notes }}</pre>
+                            </details>
+                            
+                            <div class="flex flex-col items-end space-y-4 w-full sm:w-1/2 pl-0 sm:pl-4">
+                                
+                                {% if quote.status != 'pending' and quote.status != 'draft' %}
+                                <div class="w-full flex items-center justify-between mb-2">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 h-3 rounded-full {% if quote.status != 'pending' %}bg-blue-600{% else %}bg-gray-300{% endif %}"></div>
+                                        <span class="text-[10px] mt-1 font-bold text-gray-500">Quoted</span>
+                                    </div>
+                                    <div class="h-0.5 flex-grow mx-2 {% if quote.status in 'accepted,paid,loading,dispatched,delivered' %}bg-blue-600{% else %}bg-gray-300{% endif %}"></div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 h-3 rounded-full {% if quote.status in 'accepted,paid,loading,dispatched,delivered' %}bg-blue-600{% else %}bg-gray-300{% endif %}"></div>
+                                        <span class="text-[10px] mt-1 font-bold text-gray-500">Accepted</span>
+                                    </div>
+                                    <div class="h-0.5 flex-grow mx-2 {% if quote.status in 'paid,loading,dispatched,delivered' %}bg-blue-600{% else %}bg-gray-300{% endif %}"></div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-3 h-3 rounded-full {% if quote.status in 'dispatched,delivered' %}bg-blue-600{% else %}bg-gray-300{% endif %}"></div>
+                                        <span class="text-[10px] mt-1 font-bold text-gray-500">Transit</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if quote.status == 'dispatched' or quote.status == 'delivered' %}
+                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-right w-full">
+                                    <p class="text-xs font-bold text-blue-800">🚚 DISPATCHED: {{ quote.vehicle_reg }}</p>
+                                    <p class="text-[10px] text-blue-600 mt-1">Driver: {{ quote.driver_name }} ({{ quote.driver_phone }})</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if quote.final_total %}
+                                <div class="text-right w-full">
+                                    <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Approved Total</p>
+                                    <p class="text-xl font-extrabold text-green-600">KES {{ quote.final_total }}</p>
+                                    
+                                    {% if quote.is_paid %}
+                                        <p class="text-xs font-bold text-emerald-600 mt-1">✓ Paid (Receipt: {{ quote.mpesa_receipt }})</p>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+
+                                <div class="flex space-x-2 justify-end w-full flex-wrap gap-y-2">
+                                    
+                                    <!-- UPDATED: Reorder vs Edit Draft -->
+                                    {% if quote.cart_data %}
+                                        {% if quote.status == 'draft' %}
+                                            <a href="{% url 'store:reorder' quote.id %}" class="inline-flex items-center px-4 py-2 border border-slate-300 text-xs font-bold rounded-md shadow-sm text-slate-700 bg-white hover:bg-slate-50 transition-all">
+                                                Edit Draft
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'store:reorder' quote.id %}" class="inline-flex items-center px-4 py-2 border border-transparent text-xs font-bold rounded-md shadow-sm text-white bg-slate-900 hover:bg-slate-800 transition-all">
+                                                Reorder
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if quote.status == 'reviewed' %}
+                                        <a href="{% url 'store:accept_quote' quote.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow-sm text-xs font-bold transition-all">Accept & Pay</a>
+                                        <a href="tel:+254700000000" class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md shadow-sm text-xs font-bold transition-all">Negotiate</a>
+                                    {% endif %}
+
+                                    {% if quote.status == 'accepted' and not quote.is_paid %}
+                                    <form action="{% url 'store:pay' quote.id %}" method="POST" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-xs font-bold rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-all transform hover:-translate-y-0.5">
+                                            Pay with M-Pesa
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    {% if quote.status in 'reviewed,accepted,paid,loading,dispatched,delivered' %}
+                                    <a href="{% url 'store:invoice' quote.id %}" target="_blank" class="inline-flex items-center px-4 py-2 border border-blue-200 text-xs font-bold rounded-md shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all">
+                                        Invoice
+                                    </a>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-16 text-center">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            <h3 class="text-lg font-medium text-gray-900">No projects yet</h3>
+                            <p class="text-sm text-gray-500 mt-1">Submit your first Bill of Quantities to start tracking.</p>
+                            <a href="{% url 'store:home' %}" class="mt-4 text-blue-600 font-medium hover:underline">Return to Catalog</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

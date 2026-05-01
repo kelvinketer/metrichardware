@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 border border-gray-200 rounded-xl shadow-sm">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">{{ product.name }}</h1>
+    <p class="text-xl text-gray-500 mb-8 pb-4 border-b">Base Price: <span class="font-bold text-gray-900">KES <span id="basePrice">{{ product.base_price }}</span></span> / {{ product.get_unit_of_measure_display }}</p>
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+            {% if product.requires_custom_dimensions %}
+                <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-3 mb-5">Glass Dimensions</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Width (mm)</label>
+                        <input type="number" id="glassWidth" name="width_mm" required class="mt-2 block w-full border border-gray-300 rounded-md p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Height (mm)</label>
+                        <input type="number" id="glassHeight" name="height_mm" required class="mt-2 block w-full border border-gray-300 rounded-md p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-5 bg-slate-900 text-white rounded-lg shadow-inner">
+                    <p class="text-sm text-slate-400 font-medium tracking-wide uppercase mb-1">Handling Fee: KES 500</p>
+                    <p class="text-2xl font-extrabold">Total: KES <span id="displayTotal">0.00</span></p>
+                    <input type="hidden" name="calculated_total" id="hiddenTotal" value="0">
+                </div>
+            {% else %}
+                <h3 class="text-lg font-bold text-slate-800 border-b border-slate-200 pb-3 mb-5">Order Quantity</h3>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">How many do you need for this site?</label>
+                    <input type="number" name="quantity" min="1" value="1" required class="mt-2 block w-full border border-gray-300 rounded-md p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg text-lg shadow-md transition-all transform hover:-translate-y-0.5">
+            + Add to Project List
+        </button>
+    </form>
+</div>
+
+{% if product.requires_custom_dimensions %}
+<script>
+    const widthInput = document.getElementById('glassWidth');
+    const heightInput = document.getElementById('glassHeight');
+    const displayTotal = document.getElementById('displayTotal');
+    const hiddenTotal = document.getElementById('hiddenTotal');
+    const basePrice = parseFloat(document.getElementById('basePrice').innerText);
+    const handlingFee = 500;
+
+    function calculatePrice() {
+        const width = parseFloat(widthInput.value) || 0;
+        const height = parseFloat(heightInput.value) || 0;
+        const squareMeters = (width * height) / 1000000;
+        
+        if (squareMeters > 0) {
+            const rawTotal = (squareMeters * basePrice) + handlingFee;
+            const finalTotal = rawTotal.toFixed(2);
+            displayTotal.innerText = finalTotal;
+            hiddenTotal.value = finalTotal;
+        } else {
+            displayTotal.innerText = "0.00";
+            hiddenTotal.value = 0;
+        }
+    }
+
+    widthInput.addEventListener('input', calculatePrice);
+    heightInput.addEventListener('input', calculatePrice);
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% for product in products %}
+<!-- Premium Product Card -->
+<div class="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col">
+
+    <!-- 1. Image Container (Enforced 4/3 Aspect Ratio & Hover Zoom) -->
+    <div class="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden border-b border-slate-100">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        {% else %}
+            <!-- Elegant Placeholder if no image exists -->
+            <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50 group-hover:scale-105 transition-transform duration-500">
+                <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-xs font-semibold">No Image</span>
+            </div>
+        {% endif %}
+
+        <!-- 2. Floating Status Badges -->
+        <div class="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            {% if product.stock <= 0 %}
+                <span class="bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm ring-1 ring-white/20">Out of Stock</span>
+            {% elif product.stock < 50 %}
+                <span class="bg-orange-500/90 backdrop-blur-sm text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm ring-1 ring-white/20">Low Stock: {{ product.stock }}</span>
+            {% endif %}
+
+            {% if product.requires_custom_dimensions %}
+                <span class="bg-indigo-500/90 backdrop-blur-sm text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm ring-1 ring-white/20">Custom Cut</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 3. Typography & Data Hierarchy -->
+    <div class="p-5 flex flex-col flex-grow">
+        <!-- Category (Subtle) -->
+        <div class="text-[10px] font-extrabold text-blue-600 tracking-widest uppercase mb-1.5">{{ product.category.name|cut:"," }}</div>
+
+        <!-- Product Name (Bold & Clickable) -->
+        <h3 class="text-lg font-extrabold text-slate-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+            <!-- The 'after:absolute after:inset-0' trick makes the entire card a clickable link! -->
+            <a href="{% url 'store:product_detail' product.slug %}" class="after:absolute after:inset-0 outline-none">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <!-- 4. Pricing Footer (Anchored to bottom) -->
+        <div class="mt-auto pt-4 flex items-end justify-between border-t border-slate-100 relative z-20 pointer-events-none">
+            <div>
+                <p class="text-xs text-slate-500 font-bold mb-0.5 uppercase tracking-wider">Est. Base Price</p>
+                <p class="text-xl font-black text-slate-900">
+                    KES {{ product.base_price|floatformat:0 }}
+                    <span class="text-xs text-slate-500 font-semibold normal-case">/ {{ product.get_unit_of_measure_display }}</span>
+                </p>
+            </div>
+
+            <!-- Quick Action Icon -->
+            <div class="bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white rounded-xl p-2.5 transition-all shadow-sm group-hover:shadow-blue-500/30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% empty %}
+<!-- Premium Empty State -->
+<div class="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-200 border-dashed text-center">
+    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    </div>
+    <h3 class="text-xl font-extrabold text-slate-900 mb-1">No products found</h3>
+    <p class="text-slate-500 font-medium">Try adjusting your search query or browsing a different category.</p>
+</div>
+{% endfor %}
